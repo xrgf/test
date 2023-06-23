@@ -1,0 +1,96 @@
+线程基础：
+	一 什么是线程：
+		进程是os资源分配的基本单位：资源
+		线程是os调度（代码执行）的基本单位：代码   
+
+	一个进程里可以有多个线程，同一个进程中的多个线程共享进程的资源。
+
+	本质上没有进程和线程的区别。
+		2.2版本的linux内核中 没有线程 只有进程  并且 进程的数量有限 4096个
+		2.4版本开始   内核中有了线程的概念 线程个数无限
+
+	线程和进程都是进程的结构体
+
+	二 如何创建线程：
+		一个进程中至少有一个线程   主线程   main函数
+		pthread_create函数  创建并立刻启动线程
+
+#include <pthread.h>
+int pthread_create(
+	pthread_t *thread, 					//	返回参数    线程id
+	const pthread_attr_t *attr,			//	线程属性
+    void *(*start_routine) (void *), 	//	线程函数
+    void *arg);							//	线程函数的 参数
+
+Compile and link with -pthread.
+
+
+函数指针：
+	函数名  就是 函数的地址
+
+	函数指针变量    指针变量    
+
+
+函数的默认返回类型 为 int  默认返回值为 0
+
+C不做强制类型检查 C++做强制类型检查
+
+	三 线程的结束：
+		1. 自然结束
+			线程函数返回
+		2. 主线程要结束了
+				主线程会结束所有分支线程
+		3. 自己结束自己
+			进程  exit
+			线程  pthread_exit
+		4. 被其他线程干掉
+			pthread_cancel
+
+	四 线程的参数和返回值：
+		1. 参数
+			pthread_create的第四个参数  注意线程函数参数类型为void*
+		2. 返回值
+			主线程结束前会结束所有分支线程。
+			等待某个线程结束：
+				wait
+				pthread_join
+
+	int pthread_join(pthread_t thread, void **retval);
+
+
+	五 什么时候使用多线程：需要并发的时候
+		并行和串行的区别
+
+	六 临界数据：多个进程同时访问的数据
+		同一个进程内的多个线程共享进程的资源  资源争用
+
+		多个线程同时访问同一块内存段   造成   临界数据脏
+
+
+	七 线程同步：解决临界数据脏问题
+		应用层：
+			原子锁
+			自旋锁
+			信号量   讲过了
+		内核态：
+			读写锁
+			互斥量
+			临界变量
+
+		原子锁：原子   最小的物质  不可分割 
+			原子操作  不可分割   已经是最小粒度了
+			切菜  不是切开了  是压开了
+			https://blog.csdn.net/Windgs_YF/article/details/114411761?spm=1001.2101.3001.6661.1&utm_medium=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-1-114411761-blog-9322073.pc_relevant_default&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-1-114411761-blog-9322073.pc_relevant_default&utm_relevant_index=1
+
+			atomic_add
+			atomic_inc
+
+		简单数学运算  用原子锁 最好
+
+作业：
+	多线程实现聊天室
+
+挑战任务：
+	1个文件  里面 有 4G个  电话号码
+	多线程写排序  
+

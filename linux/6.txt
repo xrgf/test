@@ -1,0 +1,119 @@
+回顾：
+	linux万物皆文件  
+	文件描述符号      整数       对应硬盘上具体一个文件
+
+	返回正数  成功 并具备某些意义
+	返回0  成功 
+	返回负数 表示失败  
+
+	失败原因会存储到某个地方    %m 对应  错误输出缓冲区中的内容
+	perror函数 
+
+	open 打开 ： 返回文件描述符号 或者负数(失败)
+		第二个参数有 O_CREAT  第三个参数就有作用(新建文件的权限)
+
+	读写 ： 数据就是二进制  
+		read  write 
+
+remove：删除文件
+
+	mv 命令实现：	
+		如果第二个参数是目录名   移动
+		如果第二个参数是文件名   重命名
+
+目录文件 
+	获取文件状态：stat
+
+	opendir  readdir
+
+0	4	0  0   0  0
+	01000000 00000000 | 00100000 00000000 == 01100000 00000000
+0	20000
+	00100000 00000000
+
+
+	01100000 00000000
+
+mkdir 创建一个目录文件
+
+lseek函数：调整文件内容指针
+	文件里有  abcdefghijklmnopqrstuvwxyz
+	隔2个读一个 ： a d g j m p s v y
+
+SEEK_SET 开头
+SEEK_CUR 当前位置
+SEEK_END 末尾
+
+文件夹遍历：	find
+	进入这个目录：
+		找到目录下所有的文件
+		找到后一个个判断  
+			如果是目录   递归调用当前函数
+			如果是文件   。。。。
+
+	opendir：打开目录文件		
+	readdir：一个个找目录下的文件    
+
+#include <sys/types.h>
+#include <dirent.h>
+DIR *opendir(const char *name);
+struct dirent *readdir(DIR *dirp);
+struct dirent {
+	ino_t          d_ino;       /* inode number */
+	off_t          d_off;       /* not an offset; see NOTES*/
+	unsigned short d_reclen;    /* length of this record */
+	unsigned char  d_type;      /* type of file; not supported by all filesystem types */
+	char           d_name[256]; /* filename */
+};
+
+
+int closedir(DIR *dirp);
+
+所有目录下 都有如下两个目录：
+	.  		： 当前目录 
+	.. 		： 当前目录的父目录
+
+文件映射虚拟内存：
+	把硬盘中的文件和内存中一块内存临时绑定！
+
+读出来 到内存
+内存中操作数据
+写入到文件中
+
+	打开文件
+	映射为虚拟内存
+	内存操作    修改文件
+	解除映射
+	关闭文件
+
+	物理内存：真实的内存
+
+
+#include <sys/mman.h>
+
+void *mmap(//返回映射的虚拟内存首地址
+	void *addr, 		//映射的虚拟内存地址  一般设置为NULL 让 os 内核自行制定
+	size_t length, 		//长度  以页为单位
+	int prot, 			//保护方式
+	int flags,			//创建方式
+    int fd, 			//文件描述符号
+    off_t offset);		//偏移量
+       
+    int munmap(void *addr, size_t length);
+
+1页 == 4K  == 4*1024  == 4096B
+
+文件映射虚拟内存模板：
+	1. 创建并打开文件
+	2. 调整文件大小
+	3. 文件映射成虚拟内存
+	4. 操作内存
+	5. 解除映射
+	6. 关闭文件
+
+作业：	
+	使用虚拟内存映射的方式操作文件
+
+小项目：
+	代码量统计器   统计你总共写了多少行代码 
+	优化：去掉空行 去掉函数声明 去掉注释

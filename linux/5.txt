@@ -1,0 +1,79 @@
+ 文件的本质：掉电不流失（硬盘）
+	操作系统上  管理数据的一种方式 
+
+	语言提供的函数
+	操作系统提供的   system call  系统调用     api
+
+文件内容操作：
+	创建文件   打开文件   关闭保存
+	读  写   调整文件内容指针
+
+	用现成的软件  
+	操作系统的命令
+	自己写的软件
+
+	system函数启动脚本程序   脚本程序中执行命令
+
+	C：FILE*   fopen  fread fwrite fseek
+	C++： fstream .open .read .write  .seekg 
+	windows:HANDLE   CreateFile ...
+
+命令 ：  read write     操作系统提前安装好的 应用程序
+函数 ：  read write			
+	
+	linux用文件描述符号来对应文件  文件描述符号是个整数
+		int fd;   file description
+
+	loadimage // 加载图片    把图片文件里的数据 弄到内存里来 和 IMAGE 变量关联到一起
+
+	fd 指向一块内存（不知道在哪）  这块内存中可以存储硬盘里 一个文件的 信息
+
+	open
+	ioctl 
+
+	int open(
+	const char *pathname, 	//带路径的文件名
+	int flags, 				//方式
+		O_RDONLY  O_WRONLY O_RDWR 
+	mode_t mode);			//权限  
+
+
+标准io ：  0 stdin   1  stdout   2 stderror
+	0 ： 标准输入设备
+	1 ： 标准输出设备
+	2 ： 标注错误输出描述符号
+ 
+万物皆文件：linux系统之上 任何东西都是以文件的形式存在
+C语言里打开文件的时候：
+	b : 字节文件   不会进行字节到字符之间的转化
+    不带b:字符文件 自动进行字节到字符之间的转化
+
+    fwrite fprintf的区别  fread和fscanf的区别
+
+
+
+man open   弹出来的是   open 命令的 帮助
+man 1 open  命令
+man 2 open  标准函数
+man 3 open  第三方库函数
+
+lseek：
+	和fseek一样
+	SEEK_SET ： 文件头
+	SEEK_CUR ： 当前位置
+	SEEK_END ： 文件末尾
+
+
+文件操作：
+	文件拷贝 文件移动  删除 获取文件信息
+
+
+作业：
+	简单实现 mv 命令
+		如果是在当前目录下  是重命名
+		如果是在其他目录下  是剪切
+
+	
+
+
+

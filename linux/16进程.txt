@@ -1,0 +1,101 @@
+回顾：
+	线程：轻量的进程    os调度的基本单位  同一进程内的线程共享进程的资源。
+
+	1. 如何创建线程：
+		pthread_create
+
+	2. 线程的结束：
+		2.1 自然结束：线程函数返回
+		2.2 主线程结束前会结束掉所有的分支线程
+			主线程最好等待分支线程结束后再结束。
+				wait    
+				pthread_join  通过参数获取线程函数返回值
+		2.3 自己结束
+				进程： exit
+				线程：pthread_exit
+		2.4 被其他线程结束
+				pthread_cancel
+
+	3. 传参  返回值      void*
+		pthread_create
+		pthread_cancel
+
+多线程 并发   临界数据 如何 保障  ：
+	共用资源  
+临界数据：多个线程可能同时访问的数据。   
+	多个线程同时访问临界数据，很有可能导致临界数据脏。
+
+避免临界数据脏的解决方案：
+	线程同步
+		原子锁       当前使用的乌班图版本使用不了
+			某个操作是原子（不可分割）操作
+
+				简单运算！
+
+
+		自旋锁
+		信号量    -  进程间通信
+
+		读写锁
+		互斥量
+		条件变量	
+
+互斥量：互相之间排斥   带相同电的  粒子       一山不能容二虎
+					mutex
+	1. 初始化				pthread_mutex_init
+	2. 上锁					pthread_mutex_lock
+	3. 判断是否上锁			pthread_mutex_trylock
+		如果 当前mutex已经被其他线程上锁了 那就返回非0.
+		如果 当前mutex没有被其他线程上锁，那就返回0 并且作用和pthread_mutex_lock一致。
+	4. 解锁					pthread_mutex_unlock
+	5. 销毁锁				pthread_mutex_destory
+
+
+条件变量：
+	一般互斥量和条件变量一起使用。
+
+条件变量：
+						cond
+	1. 初始化						pthread_cond_init
+	2. 条件变量等待    				pthread_cond_wait	
+	3. 发信号给条件变量 解除等待		pthread_cond_signal
+									pthread_cond_broadcast
+
+
+unix高级编程：
+	cond 用于 多线程的时候    它本身 应当看做  临界数据考虑 所以要上锁。
+
+读写锁：
+	读锁 写锁   
+	读读 相容：一个线程在读的时候  其他线程也可以读
+	写写相斥 读写 相斥：某个线程在写的时候，其他线程不能操作
+				pthread_rwlock_t  
+		1. 初始化	pthread_rwlock_init 
+		2. 获取	    pthread_rwlock_wrlock  pthread_rwlock_rdlock
+		3. 释放	    pthread_rwlock_unlock
+		4. 销毁     pthread_rwlock_destroy
+
+读写锁本质上和互斥锁 是一样的：
+	都是上锁后排斥其他锁   本身有锁的前提下 可以通过trylock来提前返回 但是本质上还是要等 还是阻塞。
+
+自旋锁：
+	一直循环检查锁是否可用，如果不可用，那就继续循环，如果可用，那就用。
+
+自旋锁建立锁的消耗比较小，但是当线程阻塞的时候，一直循环的消耗比较大。所以当阻塞情况比较多的时候，不建议使用。
+互斥锁建立锁的消耗比较大，但是当线程阻塞的时候，它阻塞所以无消耗。所以当阻塞时间比较多，锁的数量比较少的时候，使用互斥锁比较划得来。
+
+锁的数量。阻塞是否比较多。
+
+
+10个线程   加锁的代码比较少     使用自旋锁
+两个线程   加锁的代码比较长     互斥锁
+
+	自旋锁编程模型
+				pthread_spin_t
+		1. 初始化    thread_spin_init
+		2. 获取		thread_spin_lock
+		3. 解锁		thread_spin_unlock
+		4. 销毁所	thread_spin_destroy
+
+作业：
+	同学们课后写写代码。

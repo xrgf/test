@@ -1,0 +1,19 @@
+Server 
+
+1:创建socket函数就是类似一个文件
+socket（，，）;
+2：创建地址簇主要是为了绑定一块区域 
+struct sockaddr_in结构体里面有
+存端口存ip地址还有存主机字节序
+3:用bind函数绑定文件（就是soeket的返回值）
+4:listen(文件，字节（max为128）)监听函数
+5:accecp()函数会有一个返回值，这个返回值是为了后面发送服务的
+6：通信就行 服务器是用于接受的
+
+
+
+cliend
+1：创建套字节socket
+2：创建struct sockadd_in
+3：直接链接服务器connect
+4：通信用于发送

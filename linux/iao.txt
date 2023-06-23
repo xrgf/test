@@ -1,0 +1,98 @@
+io多路复用：多个fd（socketFd fd）同一进程内如何并发
+	select：
+		循环监视每一个   如果有一个有动静，返回  通过挨个查询来找出是哪一个有动静，然后处理
+		如果监视的fd都没有动静  那么阻塞
+
+	poll：
+		循环监视每一个 如果某个fd有动静，返回，通过比较来确定是哪个fd，然后做对应操作。
+		如果没有动静，返回。
+
+	select和poll本质上是相同的  都是轮询。
+	epoll可以认为是在poll的基础上做优化。  中断机制
+		如果没有动静，返回。
+		如果有动静 是需要提前注册，然后自动调用相应的处理函数。
+
+	轮询：select和poll   随着fd的增长   性能降低     300 以下
+	中断：epoll          不会随着fd的增长 降低性能   300-30000之间
+
+fd  我们可以分为两类：
+	网络io ： sockedFd
+	文件io ： fd
+
+	windows：所有的fd的异步操作  都通过  iocp
+	https://blog.csdn.net/Summer_night_star/article/details/120803104
+
+	linux：
+		针对 socketFd        io多路复用
+		针对  文件io			 aio
+			aio_read  相当于   先 epoll 后 read
+			aio_write 相当于   先 epoll 后 write
+
+asynchronous   a  io
+
+aio基本理论：
+	通过  os状态切换   让io过程异步进行 从而提高线程读写效率
+
+aio编程模型：
+	#include <aio.h>
+       
+    Link with -lrt.
+
+
+	1. 准备缓冲区   struct aiocb
+		aio_fildes
+		aio_buf
+		aio_nbytes
+		aio_offset
+		aio_sigevent
+	2. 异步操作     
+		异步读  	aio_read
+			int aio_read(struct aiocb *aiocbp);
+		异步写	aio_write
+			int aio_write(struct aiocb *aiocbp);
+	3. 检查是否操作完毕    
+		aio_error   	循环不断去检查
+			int aio_error(const struct aiocb *aiocbp);
+			EINPROGRESS, if the request has not been completed yet.//失败了
+			ECANCELED, if the request was canceled.//io操作被取消了
+			0, if the request completed successfully.//成功了
+
+		aio_suspend		阻塞式检查
+			int aio_suspend(
+				const struct aiocb * const aiocb_list[],
+                int nitems, //数组下标
+                const struct timespec *timeout);
+            一般搭配 lio_listio 使用。
+	4. 得到数据
+		aio_return
+		ssize_t aio_return(struct aiocb *aiocbp);
+
+
+
+
+Thread safety：线程安全   内核保证是  原子操作。
+	多线程 并发 操作数据时 不用管 临界数据脏的问题。
+
+
+lio_listio:
+	int lio_listio(
+		int mode, 							//LIO_WAIT  
+		struct aiocb *const aiocb_list[],	//数组
+        int nitems, 						//操作次数！！！
+        struct sigevent *sevp);				//读写锁限制  默认0 没有限制
+
+aio_suspend:
+	int aio_suspend(
+		const struct aiocb * const aiocb_list[],
+        int nitems, //数组元素个数！
+        const struct timespec *timeout);
+
+
+
+作业：
+	文件传输    网络进行文件传输
+	服务器可以接受多个客户端的文件传输，多线程来操作。
+	涉及到socketFd  使用  select  或者 poll 或者epoll
+	设计到数据传输  使用    aio。
+
+第15课之前作业。发群里。
